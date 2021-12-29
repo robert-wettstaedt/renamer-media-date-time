@@ -1,0 +1,29 @@
+{
+  "name": "renamer-media-date-time",
+  "keywords": [
+    "renamer-plugin",
+    "renamer"
+  ],
+  "author": "Robert Wettstädt",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "watch": "tsc -w",
+    "build": "tsc",
+    "prebuild": "rm -rf dist"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "@types/node": "^17.0.5",
+    "date-fns": "^2.28.0"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": false
+  }
+}
