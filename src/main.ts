@@ -32,19 +32,23 @@ class MediaDateTime {
       return filePath
     }
 
-    const formattedDate = format(date, "yyyyMMdd_HHmmss", {})
-    const baseNewFilePath = path.join(file.dir, `${formattedDate}.${file.ext}`)
-    const index = this.#indexMap[baseNewFilePath]
-    const indexStr = index == null ? "" : `_${index + 1}`
-    const newFilePath = path.join(file.dir, `${formattedDate}${indexStr}${file.ext}`)
+    try {
+      const formattedDate = format(date, "yyyyMMdd_HHmmss", {})
+      const baseNewFilePath = path.join(file.dir, `${formattedDate}${file.ext.toLowerCase()}`)
+      const index = this.#indexMap[baseNewFilePath]
+      const indexStr = index == null ? "" : `_${index + 1}`
+      const newFilePath = path.join(file.dir, `${formattedDate}${indexStr}${file.ext}`)
 
-    this.#indexMap[baseNewFilePath] = (this.#indexMap[baseNewFilePath] ?? -1) + 1
+      this.#indexMap[baseNewFilePath] = (this.#indexMap[baseNewFilePath] ?? -1) + 1
 
-    return newFilePath
+      return newFilePath
+    } catch (error) {
+      return filePath
+    }
   }
 
   #getExif = (filePath: string): ExifMap => {
-    const output = execSync(`exiftool ${filePath}`)
+    const output = execSync(`exiftool "${filePath}"`)
     const outStr = new TextDecoder().decode(output)
 
     const lines = outStr.split("\n")
@@ -70,6 +74,13 @@ class MediaDateTime {
     }
   }
 
+  #isCorrectFileName = (file: ParsedPath): boolean => {
+    const base = file.base.split(file.ext)[0]
+    const match = base.match(/\d{8}_\d{6,}/)
+
+    return match != null && match.length === 0 && match.index != null && match.index === 0
+  }
+
   #getDateFromFileName = (file: ParsedPath): Date | undefined => {
     const base = file.base.split(file.ext)[0]
     const match = base.match(/\d{8}_\d{6,}/)
@@ -92,13 +103,23 @@ class MediaDateTime {
     }
 
     const unixTimestampString = match[0].substring(0, 13)
-    const unixTimestamp = window.parseInt(unixTimestampString)
+    const unixTimestamp = parseInt(unixTimestampString)
     const date = new Date(unixTimestamp)
     return date
   }
 
   #getDate = (filePath: string): Date | undefined => {
     const file = path.parse(filePath)
+
+    if (this.#isCorrectFileName(file)) {
+      return undefined
+    }
+
+    const exifData = this.#getExif(filePath)
+    const dateFromExif = this.#getDateFromExif(file, exifData)
+    if (dateFromExif != null) {
+      return dateFromExif
+    }
 
     const dateFromFileName = this.#getDateFromFileName(file)
     if (dateFromFileName != null) {
@@ -108,12 +129,6 @@ class MediaDateTime {
     const dateFromUnixTimestamp = this.#getDateFromUnixTimestamp(file)
     if (dateFromUnixTimestamp != null) {
       return dateFromUnixTimestamp
-    }
-
-    const exifData = this.#getExif(filePath)
-    const dateFromExif = this.#getDateFromExif(file, exifData)
-    if (dateFromExif != null) {
-      return dateFromExif
     }
   }
 }
