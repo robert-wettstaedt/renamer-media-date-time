@@ -8,8 +8,8 @@
     "renamer"
   ],
   "repository": "https://github.com/robert-wettstaedt/renamer-media-date-time",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "type": "module",
   "scripts": {
     "watch": "tsc -w",

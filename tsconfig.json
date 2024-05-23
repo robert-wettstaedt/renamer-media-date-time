@@ -5,10 +5,12 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ES6",
     "moduleResolution": "node",
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "outDir": ".",
+    "rootDir": ".",
     "skipLibCheck": true,
     "strict": true,
     "target": "ES6"
-  }
+  },
+  "include": ["./index.ts"],
+  "exclude": []
 }
