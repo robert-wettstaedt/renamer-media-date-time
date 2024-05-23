@@ -11,16 +11,19 @@
   "type": "module",
   "scripts": {
     "watch": "tsc -w",
-    "build": "tsc",
+    "build": "tsc -p .",
     "prebuild": "rm -rf dist"
   },
   "license": "MIT",
-  "devDependencies": {
-    "typescript": "^4.5.4"
-  },
   "dependencies": {
     "@types/node": "^17.0.5",
     "date-fns": "^2.28.0"
+  },
+  "devDependencies": {
+    "@semantic-release/git": "^10.0.1",
+    "prettier": "^3.2.5",
+    "semantic-release": "^23.1.1",
+    "typescript": "^4.5.4"
   },
   "prettier": {
     "printWidth": 120,
