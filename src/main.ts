@@ -2,7 +2,7 @@ import { execSync } from "child_process"
 import { format, parse } from "date-fns"
 import path, { ParsedPath } from "path"
 
-const isImage = (file: ParsedPath) => file.ext.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp)$/) != null
+const isImage = (file: ParsedPath) => file.ext.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|heic)$/) != null
 
 const isVideo = (file: ParsedPath) => file.ext.toLowerCase().match(/\.(mp4|mov)$/) != null
 
@@ -78,7 +78,7 @@ class MediaDateTime {
     const base = file.base.split(file.ext)[0]
     const match = base.match(/\d{8}_\d{6,}/)
 
-    return match != null && match.length === 0 && match.index != null && match.index === 0
+    return match != null && match.length === 1 && match.index != null && match.index === 0
   }
 
   #getDateFromFileName = (file: ParsedPath): Date | undefined => {
