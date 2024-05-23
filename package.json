@@ -1,11 +1,13 @@
 {
   "name": "renamer-media-date-time",
+  "version": "1.0.0",
+  "author": "Robert Wettstädt",
+  "description": "Renamer plugin replacing the filename of image and video files with the creation date based on EXIF data",
   "keywords": [
     "renamer-plugin",
     "renamer"
   ],
-  "author": "Robert Wettstädt",
-  "version": "1.0.0",
+  "repository": "https://github.com/robert-wettstaedt/renamer-media-date-time",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
