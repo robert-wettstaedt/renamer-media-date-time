@@ -31,6 +31,7 @@ jobs:
         with:
           report_path: coverage/coverage-summary.json
           output_path: coverage-badge.svg
+          path: .
 
       - name: Commit badge
         uses: EndBug/add-and-commit@v9

@@ -34,15 +34,5 @@
   "prettier": {
     "printWidth": 120,
     "semi": false
-  },
-  "vitest": {
-    "coverage": {
-      "reporter": [
-        "text",
-        "lcov",
-        "json-summary"
-      ],
-      "reportsDirectory": "coverage"
-    }
   }
 }
