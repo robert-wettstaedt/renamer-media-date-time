@@ -1,9 +1,12 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  # Auto-release only after the Test workflow completes successfully
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+  # Allow manual releases
   workflow_dispatch: {}
 
 permissions:
@@ -13,6 +16,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    # Gate auto releases on successful tests for main; allow manual dispatch
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     permissions:
       contents: write # to be able to publish a GitHub release
       issues: write # to be able to comment on released issues
@@ -20,20 +25,26 @@ jobs:
       id-token: write # to enable use of OIDC for npm provenance
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
+
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version: 20
+          cache: npm
+
       - name: Install dependencies
-        run: npm clean-install
+        run: npm install
+
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
         run: npm audit signatures
+
       - name: Build
         run: npm run build
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

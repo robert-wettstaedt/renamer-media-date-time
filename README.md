@@ -1,5 +1,7 @@
 # renamer-media-date-time
 
+![Coverage](coverage-badge.svg)
+
 This is a [renamer](https://github.com/75lb/renamer) replace chain plugin - see [this tutorial](https://github.com/75lb/renamer/wiki/How-to-use-replace-chain-plugins) to learn how to use renamer plugins.
 
 Replaces the filename of image and video files with the creation date in the following format: `yyyyMMdd_HHmmss.{ext}` based on EXIF data.
@@ -18,7 +20,7 @@ Remove the `--dry-run` flag to rename the files on disk.
 
 Supported file formats: `.jpg`, `.png`, `.gif`, `.bmp`, `.heic`, `.mp4`, `.mov`.
 
-```bash
+````bash
 $ tree
 .
 ├── one.jpg
@@ -39,4 +41,14 @@ $ tree -N
 └── 20240429_132557.mp4
 
 0 directories, 2 files
-```
+
+## Development
+
+- Run tests locally:
+
+```bash
+npm install
+npm run test
+````
+
+- CI runs on GitHub Actions for pushes and PRs. Coverage is generated via Vitest and the badge above is automatically updated.
