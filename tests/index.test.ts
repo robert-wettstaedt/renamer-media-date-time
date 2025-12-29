@@ -1,8 +1,8 @@
+import * as child_process from "child_process"
 import { format } from "date-fns"
 import path from "path"
-import * as child_process from "child_process"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import MediaDateTime from "../index"
-import { describe, it, expect, beforeEach, vi } from "vitest"
 
 // Hoist a mock for child_process to allow controllable execSync behavior
 vi.mock("child_process", () => ({
@@ -151,5 +151,33 @@ describe("MediaDateTime plugin", () => {
 
     // Due to try/catch around getDate, fallback parsing will not occur
     expect(output).toBe(input)
+  })
+
+  it("renames when date pattern appears mid-name (fallback to filename date)", () => {
+    ;(child_process.execSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(exifOutput())
+    const input = path.join("/dir", "a_20210518_122045_b.jpeg")
+    const out = plugin.replace(input)
+    expect(out).toBe(path.join("/dir", "20210518_122045.jpeg"))
+  })
+
+  it("returns original path when date-fns format throws (invalid date)", () => {
+    ;(child_process.execSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(exifOutput("invalid-date"))
+    const input = path.join("/dir", "photo.png")
+    const out = plugin.replace(input)
+    expect(out).toBe(input)
+  })
+
+  it("handles other extensions: png, bmp, jpeg, mp4", () => {
+    ;(child_process.execSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(exifOutput("2024:04:29 13:25:57"))
+    const base = path.join("/dir")
+    const png = plugin.replace(path.join(base, "x.png"))
+    const bmp = plugin.replace(path.join(base, "y.BMP"))
+    const jpeg = plugin.replace(path.join(base, "z.JPEG"))
+    const mp4 = plugin.replace(path.join(base, "v.mp4"))
+
+    expect(png).toBe(path.join(base, "20240429_132557.png"))
+    expect(bmp).toBe(path.join(base, "20240429_132557.BMP"))
+    expect(jpeg).toBe(path.join(base, "20240429_132557.JPEG"))
+    expect(mp4).toBe(path.join(base, "20240429_132557.mp4"))
   })
 })

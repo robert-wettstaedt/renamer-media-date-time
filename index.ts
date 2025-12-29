@@ -1,5 +1,6 @@
 import { execSync } from "child_process"
 import { format, parse } from "date-fns"
+import fs from "fs"
 import path, { ParsedPath } from "path"
 
 const isImage = (file: ParsedPath) => file.ext.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|heic)$/) != null
@@ -10,6 +11,7 @@ type ExifMap = Map<string, string>
 
 class MediaDateTime {
   #indexMap: Record<string, number | undefined> = {}
+  #dirCache: Map<string, Set<string>> = new Map()
 
   description(): string {
     return "Renames image and video files to a yyyyMMdd_HHmmss format."
@@ -34,12 +36,24 @@ class MediaDateTime {
 
     try {
       const formattedDate = format(date, "yyyyMMdd_HHmmss", {})
-      const baseNewFilePath = path.join(file.dir, `${formattedDate}${file.ext.toLowerCase()}`)
-      const index = this.#indexMap[baseNewFilePath]
-      const indexStr = index == null ? "" : `_${index + 1}`
+
+      const extLower = file.ext.toLowerCase()
+      const baseKey = path.join(file.dir, `${formattedDate}${extLower}`)
+
+      // Initialize index from filesystem once for this base key to avoid collisions
+      if (this.#indexMap[baseKey] == null) {
+        this.#indexMap[baseKey] = this.#computeInitialIndex(file.dir, formattedDate, extLower)
+      }
+
+      // Find next available suffix, checking in-memory and filesystem cache
+      const nextIndex = this.#nextAvailableIndex(file.dir, formattedDate, extLower, this.#indexMap[baseKey] ?? -1)
+      const indexStr = nextIndex < 0 ? "" : `_${nextIndex + 1}`
+      const newFileNameLower = `${formattedDate}${indexStr}${extLower}`
       const newFilePath = path.join(file.dir, `${formattedDate}${indexStr}${file.ext}`)
 
-      this.#indexMap[baseNewFilePath] = (this.#indexMap[baseNewFilePath] ?? -1) + 1
+      // Update in-memory trackers and cache for subsequent calls
+      this.#indexMap[baseKey] = nextIndex
+      this.#addToDirCache(file.dir, newFileNameLower)
 
       return newFilePath
     } catch (error) {
@@ -129,6 +143,64 @@ class MediaDateTime {
     const dateFromUnixTimestamp = this.#getDateFromUnixTimestamp(file)
     if (dateFromUnixTimestamp != null) {
       return dateFromUnixTimestamp
+    }
+  }
+
+  // Directory cache helpers
+  #getDirCache = (dir: string): Set<string> => {
+    const cached = this.#dirCache.get(dir)
+    if (cached != null) return cached
+
+    let entries: string[] = []
+    try {
+      entries = fs.readdirSync(dir)
+    } catch (_) {
+      // Directory may not exist or be inaccessible; treat as empty for performance/safety
+      entries = []
+    }
+
+    const set = new Set(entries.map((name) => name.toLowerCase()))
+    this.#dirCache.set(dir, set)
+    return set
+  }
+
+  #addToDirCache = (dir: string, nameLower: string): void => {
+    const set = this.#getDirCache(dir)
+    set.add(nameLower)
+  }
+
+  #computeInitialIndex = (dir: string, formattedDate: string, extLower: string): number => {
+    const set = this.#getDirCache(dir)
+    const regex = new RegExp(`^${formattedDate}(?:_(\\d+))?${extLower}$`)
+
+    let maxSuffix = -1
+    for (const name of set) {
+      const m = name.match(regex)
+      if (m) {
+        if (m[1] != null) {
+          const n = parseInt(m[1], 10)
+          if (!Number.isNaN(n)) maxSuffix = Math.max(maxSuffix, n)
+        } else {
+          // Base name without suffix exists; ensure next becomes _1 if no higher suffix
+          maxSuffix = Math.max(maxSuffix, -1)
+        }
+      }
+    }
+
+    return maxSuffix
+  }
+
+  #nextAvailableIndex = (dir: string, formattedDate: string, extLower: string, startIndex: number): number => {
+    const set = this.#getDirCache(dir)
+    let idx = startIndex
+
+    // Try candidate names until one is not present in cache (filesystem or in-memory additions)
+    while (true) {
+      const candidate = idx < 0 ? `${formattedDate}${extLower}` : `${formattedDate}_${idx + 1}${extLower}`
+      if (!set.has(candidate)) {
+        return idx
+      }
+      idx += 1
     }
   }
 }

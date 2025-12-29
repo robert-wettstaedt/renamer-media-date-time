@@ -5,6 +5,7 @@ export default defineConfig({
     coverage: {
       reporter: ["text", "lcov", "json-summary"],
       reportsDirectory: "coverage",
+      exclude: ["release.config.cjs"],
     },
   },
 })
