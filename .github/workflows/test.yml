@@ -28,6 +28,7 @@ jobs:
 
       - name: Generate coverage badge
         uses: tj-actions/coverage-badge-js@v2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           report_path: coverage/coverage-summary.json
           output_path: coverage-badge.svg
@@ -35,6 +36,7 @@ jobs:
 
       - name: Commit badge
         uses: EndBug/add-and-commit@v9
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           add: "coverage-badge.svg README.md"
           message: "chore(ci): update coverage badge"
