@@ -16,8 +16,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    # Gate auto releases on successful tests; allow manual dispatch
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # Gate auto releases on successful tests for main; allow manual dispatch
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     permissions:
       contents: write # to be able to publish a GitHub release
       issues: write # to be able to comment on released issues

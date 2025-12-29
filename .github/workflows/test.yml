@@ -27,9 +27,10 @@ jobs:
           npm run test -- --coverage
 
       - name: Generate coverage badge
-        uses: tj-actions/coverage-badge@v2
+        uses: tj-actions/coverage-badge-js@v2
         with:
-          filename: ./coverage/lcov.info
+          report_path: coverage/coverage-summary.json
+          output_path: coverage-badge.svg
 
       - name: Commit badge
         uses: EndBug/add-and-commit@v9
