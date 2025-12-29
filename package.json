@@ -1,6 +1,6 @@
 {
   "name": "renamer-media-date-time",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Robert Wettstädt",
   "description": "Renamer plugin replacing the filename of image and video files with the creation date based on EXIF data",
   "keywords": [
